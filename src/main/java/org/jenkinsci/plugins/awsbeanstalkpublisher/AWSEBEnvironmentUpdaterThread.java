@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher;
 
-import hudson.model.BuildListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -17,6 +16,8 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeEventsResult;
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 import com.amazonaws.services.elasticbeanstalk.model.EventDescription;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest;
+import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 
 public class AWSEBEnvironmentUpdaterThread implements Callable<AWSEBEnvironmentUpdaterThread> {
     private static final int MAX_ATTEMPTS = 5;
@@ -28,7 +29,7 @@ public class AWSEBEnvironmentUpdaterThread implements Callable<AWSEBEnvironmentU
     private final DescribeEnvironmentsRequest envRequest;
     private final DescribeEventsRequest eventRequest;
     private final String environmentId;
-    private final BuildListener listener;
+    private final TaskListener listener;
     private final String versionLabel;
 
     private boolean isUpdated = false;
@@ -37,7 +38,7 @@ public class AWSEBEnvironmentUpdaterThread implements Callable<AWSEBEnvironmentU
     private int nAttempt;
     private EventDescription lastEvent;
 
-    public AWSEBEnvironmentUpdaterThread(AWSElasticBeanstalk awseb, EnvironmentDescription envd, BuildListener listener, String versionLabel) {
+    public AWSEBEnvironmentUpdaterThread(AWSElasticBeanstalk awseb, EnvironmentDescription envd, TaskListener listener, String versionLabel) {
         this.awseb = awseb;
         this.envd = envd;
         this.listener = listener;

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -111,8 +112,8 @@ public class AWSEBCredentials extends AbstractDescribableImpl<AWSEBCredentials> 
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
-    
 
+    @Symbol("ebCredentials")
     public final static class DescriptorImpl extends Descriptor<AWSEBCredentials> {
 
         @Override

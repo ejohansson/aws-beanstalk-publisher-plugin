@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 public class AWSEBS3Setup extends AWSEBSetup {
 
@@ -26,7 +27,7 @@ public class AWSEBS3Setup extends AWSEBSetup {
     /**
      * Bucket Name
      */
-    private final String bucketName;
+    private String bucketName;
 
     public String getBucketName() {
         return bucketName;
@@ -35,7 +36,7 @@ public class AWSEBS3Setup extends AWSEBSetup {
     /**
      * Bucket Region
      */
-    private final String bucketRegion;
+    private String bucketRegion;
 
     public String getBucketRegion() {
         return bucketRegion;
@@ -44,34 +45,62 @@ public class AWSEBS3Setup extends AWSEBSetup {
     /**
      * Key Format
      */
-    private final String keyPrefix;
+    private String keyPrefix;
 
     public String getKeyPrefix() {
         return keyPrefix;
     }
 
-    private final String rootObject;
+    private String rootObject;
 
     public String getRootObject() {
         return rootObject;
     }
 
-    private final String includes;
+    private String includes;
 
     public String getIncludes() {
         return includes;
     }
 
-    private final String excludes;
+    private String excludes;
 
     public String getExcludes() {
         return excludes;
     }
 
-    private final Boolean overwriteExistingFile;
+    private Boolean overwriteExistingFile;
 
     public boolean isOverwriteExistingFile() {
         return (overwriteExistingFile == null ? false : overwriteExistingFile);
+    }
+
+    @DataBoundSetter public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    @DataBoundSetter public void setBucketRegion(String bucketRegion) {
+        this.bucketRegion = bucketRegion;
+    }
+
+    @DataBoundSetter public void setKeyPrefix(String keyPrefix) {
+        this.keyPrefix = keyPrefix;
+    }
+
+    @DataBoundSetter public void setRootObject(String rootObject) {
+        this.rootObject = rootObject;
+    }
+
+    @DataBoundSetter public void setIncludes(String includes) {
+        this.includes = includes;
+    }
+
+    @DataBoundSetter public void setExcludes(String excludes) {
+        this.excludes = excludes;
+    }
+
+    @DataBoundSetter public void setOverwriteExistingFile(Boolean overwriteExistingFile) {
+        this.overwriteExistingFile = overwriteExistingFile;
     }
 
     // Overridden for better type safety.
@@ -81,7 +110,7 @@ public class AWSEBS3Setup extends AWSEBSetup {
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
-    
+
     public static DescriptorImpl getDesc() {
         return DESCRIPTOR;
     }

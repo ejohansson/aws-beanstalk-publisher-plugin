@@ -1,29 +1,30 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Items;
-import hudson.model.Saveable;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBElasticBeanstalkSetup;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBSetup;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBSetupDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import javax.annotation.Nonnull;
 
 /**
  * AWS Elastic Beanstalk Deployment
@@ -59,10 +60,9 @@ public class AWSEBBuilder extends AWSEBBuilderBackwardsCompatibility {
     }
 
 
-
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-        return AWSEBSetup.perform(build, launcher, listener, getExtensions());
+    public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
+         AWSEBSetup.perform(build, workspace, launcher, listener, getExtensions());
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -77,7 +77,7 @@ public class AWSEBBuilder extends AWSEBBuilderBackwardsCompatibility {
         return (DescriptorImpl) super.getDescriptor();
     }
 
-    @Extension
+    @Extension @Symbol("ebBuilder")
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         

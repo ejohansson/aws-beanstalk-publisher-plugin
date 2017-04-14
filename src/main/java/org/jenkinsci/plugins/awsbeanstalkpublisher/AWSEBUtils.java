@@ -1,9 +1,9 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher;
 
+import hudson.EnvVars;
 import hudson.Util;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
+import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
 
 import com.amazonaws.ClientConfiguration;
@@ -38,7 +42,7 @@ public class AWSEBUtils {
         return strip(String.format(mask, args).replaceAll("/{2,}", ""));
     }
 
-    public static List<String> getValue(AbstractBuild<?, ?> build, BuildListener listener, List<String> values) {
+    public static List<String> getValue(Run<?, ?> build, TaskListener listener, List<String> values) {
         List<String> newValues = new ArrayList<String>(values.size());
         for (String value : values) {
             if (!value.isEmpty()) {
@@ -59,7 +63,7 @@ public class AWSEBUtils {
         return s3;
     }
     
-    public static String getValue(AbstractBuild<?, ?> build, BuildListener listener, String value) {
+    public static String getValue(Run<?, ?> build, TaskListener listener, String value) {
         return strip(replaceMacros(build, listener, value));
     }
 
@@ -115,23 +119,39 @@ public class AWSEBUtils {
         return result.getEnvironments();
     }
 
-    public static String replaceMacros(AbstractBuild<?, ?> build, BuildListener listener, String inputString) {
-        String returnString = inputString;
-        if (build != null && inputString != null) {
+    public static String replaceMacros(Run<?, ?> build, TaskListener listener, String inputString) {
+//        String returnString = inputString;
+        if (build instanceof AbstractBuild) {
+            EnvVars env = null;
             try {
-                Map<String, String> messageEnvVars = new HashMap<String, String>();
-
-                messageEnvVars.putAll(build.getCharacteristicEnvVars());
-                messageEnvVars.putAll(build.getBuildVariables());
-                messageEnvVars.putAll(build.getEnvironment(listener));
-
-                returnString = Util.replaceMacro(inputString, messageEnvVars);
-
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Couldn't replace macros in message: ", e);
+                env = build.getEnvironment(listener);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
             }
+            env.overrideAll(((AbstractBuild) build).getBuildVariables());
+            return env.expand(inputString);
+        } else {
+            return inputString;
         }
-        return returnString;
+//        if (build != null && inputString != null) {
+//            try {
+//                Map<String, String> messageEnvVars = new HashMap<String, String>();
+//
+//                messageEnvVars.putAll(build.getCharacteristicEnvVars());
+//                messageEnvVars.putAll(build.getBuildVariables());
+//                messageEnvVars.putAll(build.getEnvironment(listener));
+//
+//                returnString = Util.replaceMacro(inputString, messageEnvVars);
+//
+//            } catch (Exception e) {
+//                logger.log(Level.SEVERE, "Couldn't replace macros in message: ", e);
+//            }
+//        }
+//        return returnString;
 
     }
     
@@ -147,7 +167,7 @@ public class AWSEBUtils {
     }
     
 
-    public static void log(BuildListener listener, String mask, Object... args) {
+    public static void log(TaskListener listener, String mask, Object... args) {
         listener.getLogger().println(String.format(mask, args));
     }
 

@@ -123,4 +123,8 @@ public abstract class AWSEBPublisherBackwardsCompatibility  extends Recorder {
     @Deprecated
     protected transient String versionLabelFormat;
 
+
+
+
+
 }

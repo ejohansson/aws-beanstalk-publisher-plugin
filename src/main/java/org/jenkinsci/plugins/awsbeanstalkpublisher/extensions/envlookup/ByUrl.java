@@ -1,8 +1,9 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.envlookup;
 
 import hudson.Extension;
+import hudson.model.Run;
 import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
+import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import org.jenkinsci.plugins.awsbeanstalkpublisher.AWSEBUtils;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBSetup;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBSetupDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -25,10 +27,20 @@ import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
 
 public class ByUrl extends AWSEBSetup implements EnvLookup {
 
-    private final List<String> urlList;
+    private  List<String> urlList;
 
     @DataBoundConstructor
     public ByUrl(String urlList) {
+        this.urlList = new ArrayList<String>();
+        if (!StringUtils.isEmpty(urlList)) {
+            for (String next : urlList.split("\n")) {
+                this.urlList.add(next.trim());
+            }
+        }
+    }
+
+    @DataBoundSetter
+    public void setUrlList(String urlList) {
         this.urlList = new ArrayList<String>();
         if (!StringUtils.isEmpty(urlList)) {
             for (String next : urlList.split("\n")) {
@@ -42,7 +54,7 @@ public class ByUrl extends AWSEBSetup implements EnvLookup {
     }
 
     @Override
-    public List<EnvironmentDescription> getEnvironments(AbstractBuild<?, ?> build, BuildListener listener, AWSElasticBeanstalk awseb, String applicationName) {
+    public List<EnvironmentDescription> getEnvironments(Run<?, ?> build, TaskListener listener, AWSElasticBeanstalk awseb, String applicationName) {
         DescribeEnvironmentsRequest request = new DescribeEnvironmentsRequest();
         request.withApplicationName(applicationName);
         request.withIncludeDeleted(false);

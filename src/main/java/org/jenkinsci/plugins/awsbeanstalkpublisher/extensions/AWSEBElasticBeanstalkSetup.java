@@ -1,11 +1,13 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher.extensions;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
+import hudson.model.Run;
 import hudson.model.Saveable;
+import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -21,6 +23,7 @@ import org.jenkinsci.plugins.awsbeanstalkpublisher.AWSEBUtils;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.envlookup.ByName;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.envlookup.ByUrl;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.amazonaws.regions.Regions;
@@ -118,7 +121,7 @@ public class AWSEBElasticBeanstalkSetup extends AWSEBSetup {
         return awsRegionText;
     }
 
-    public Regions getAwsRegion(AbstractBuild<?, ?> build, BuildListener listener) {
+    public Regions getAwsRegion(Run<?, ?> build, TaskListener listener) {
         String regionName = AWSEBUtils.getValue(build, listener, awsRegionText);
         try {
             return Regions.fromName(regionName);
@@ -151,7 +154,7 @@ public class AWSEBElasticBeanstalkSetup extends AWSEBSetup {
         return credentialsText;
     }
     
-    public AWSEBCredentials getActualcredentials(AbstractBuild<?, ?> build, BuildListener listener) {
+    public AWSEBCredentials getActualcredentials(Run<?, ?> build, TaskListener listener) {
         AWSEBCredentials creds = null;
                 
         if (!StringUtils.isEmpty(credentialsText)) {
@@ -168,9 +171,42 @@ public class AWSEBElasticBeanstalkSetup extends AWSEBSetup {
         return creds;
     }
 
+
+    @DataBoundSetter public void setCredentialsString(String credentialsString) {
+        this.credentialsString = credentialsString;
+    }
+
+    @DataBoundSetter public void setCredentialsText(String credentialsText) {
+        this.credentialsText = credentialsText;
+    }
+
+    @DataBoundSetter public void setAwsRegion(Regions awsRegion) {
+        this.awsRegion = awsRegion;
+    }
+
+    @DataBoundSetter public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    @DataBoundSetter public void setVersionLabelFormat(String versionLabelFormat) {
+        this.versionLabelFormat = versionLabelFormat;
+    }
+
+    @DataBoundSetter public void setFailOnError(Boolean failOnError) {
+        this.failOnError = failOnError;
+    }
+
+    @DataBoundSetter public void setExtensions(DescribableList<AWSEBSetup, AWSEBSetupDescriptor> extensions) {
+        this.extensions = extensions;
+    }
+
+    @DataBoundSetter public void setEnvLookup(DescribableList<AWSEBSetup, AWSEBSetupDescriptor> envLookup) {
+        this.envLookup = envLookup;
+    }
+
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
-        AWSEBEnvironmentUpdater updater = new AWSEBEnvironmentUpdater(build, launcher, listener, this);
+    public boolean perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws Exception {
+        AWSEBEnvironmentUpdater updater = new AWSEBEnvironmentUpdater(build, workspace, launcher, listener, this);
         return updater.perform();
     }
 

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBElasticBeanstalkSetup;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBS3Setup;
@@ -18,7 +19,7 @@ import hudson.tasks.Builder;
 import hudson.util.DescribableList;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-public abstract class AWSEBBuilderBackwardsCompatibility extends Builder implements BuildStep {
+public abstract class AWSEBBuilderBackwardsCompatibility extends Builder implements SimpleBuildStep {
 
     abstract DescribableList<AWSEBSetup, AWSEBSetupDescriptor> getExtensions();
 
@@ -121,5 +122,5 @@ public abstract class AWSEBBuilderBackwardsCompatibility extends Builder impleme
 
     @Deprecated
     protected transient String versionLabelFormat;
-    
+
 }

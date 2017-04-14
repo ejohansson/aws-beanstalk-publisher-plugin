@@ -1,20 +1,17 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.model.BuildListener;
-import hudson.model.Items;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Result;
-import hudson.model.Saveable;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
@@ -22,6 +19,7 @@ import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBElasticBeanstalkSetup;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBSetup;
 import org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.AWSEBSetupDescriptor;
@@ -36,29 +34,29 @@ import com.amazonaws.services.elasticbeanstalk.model.ApplicationDescription;
  * AWS Elastic Beanstalk Deployment
  */
 public class AWSEBPublisher extends AWSEBPublisherBackwardsCompatibility {
-    
-    @Initializer(before=InitMilestone.PLUGINS_STARTED)
+
+    @Initializer(before = InitMilestone.PLUGINS_STARTED)
     public static void addAlias() {
         Items.XSTREAM2.addCompatibilityAlias("org.jenkinsci.plugins.awsbeanstalkpublisher.AWSEBDeploymentPublisher", AWSEBPublisher.class);
     }
-    
+
     @DataBoundConstructor
     public AWSEBPublisher(
             List<AWSEBElasticBeanstalkSetup> extensions) {
         super();
         this.extensions = new DescribableList<AWSEBSetup, AWSEBSetupDescriptor>(
-                Saveable.NOOP,Util.fixNull(extensions));
+                Saveable.NOOP, Util.fixNull(extensions));
     }
-    
+
     private DescribableList<AWSEBSetup, AWSEBSetupDescriptor> extensions;
-    
+
     public DescribableList<AWSEBSetup, AWSEBSetupDescriptor> getExtensions() {
         if (extensions == null) {
-            extensions = new DescribableList<AWSEBSetup, AWSEBSetupDescriptor>(Saveable.NOOP,Util.fixNull(extensions));
+            extensions = new DescribableList<AWSEBSetup, AWSEBSetupDescriptor>(Saveable.NOOP, Util.fixNull(extensions));
         }
         return extensions;
     }
-    
+
 
     public Object readResolve() {
         readBackExtensionsFromLegacy();
@@ -66,12 +64,20 @@ public class AWSEBPublisher extends AWSEBPublisherBackwardsCompatibility {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (build.getResult().isWorseThan(Result.SUCCESS)) {
             return false;
         }
-        return AWSEBSetup.perform(build, launcher, listener, getExtensions());
+        return AWSEBSetup.perform(build, build.getWorkspace(), launcher, listener, getExtensions());
     }
+
+//    @Override
+//    public boolean perform(Run<?, ?> build, FilePath workspace, Launcher launcher, BuildListener listener) {
+//        if (build.getResult().isWorseThan(Result.SUCCESS)) {
+//            return false;
+//        }
+//        return AWSEBSetup.perform(build, workspace, launcher, listener, getExtensions());
+//    }
 
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
@@ -86,6 +92,7 @@ public class AWSEBPublisher extends AWSEBPublisherBackwardsCompatibility {
     }
 
     @Extension
+    @Symbol("ebPublisher")
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         private Set<AWSEBCredentials> credentials;
@@ -103,7 +110,7 @@ public class AWSEBPublisher extends AWSEBPublisherBackwardsCompatibility {
             return "Deploy into AWS Elastic Beanstalk";
         }
 
-        
+
         public List<AWSEBSetupDescriptor> getExtensionDescriptors() {
             List<AWSEBSetupDescriptor> extensions = new ArrayList<AWSEBSetupDescriptor>(1);
             extensions.add(AWSEBElasticBeanstalkSetup.getDesc());
@@ -121,17 +128,17 @@ public class AWSEBPublisher extends AWSEBPublisherBackwardsCompatibility {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            
+
             AWSEBCredentials.configureCredentials(req.bindJSONToList(AWSEBCredentials.class, json.get("credentials")));
             credentials = AWSEBCredentials.getCredentials();
             save();
             return super.configure(req, json);
         }
-        
+
         public Set<AWSEBCredentials> getCredentials() {
             return credentials;
         }
-        
+
     }
 
 }

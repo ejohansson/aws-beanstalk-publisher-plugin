@@ -3,23 +3,24 @@ package org.jenkinsci.plugins.awsbeanstalkpublisher.extensions;
 import java.util.List;
 
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
 public abstract class AWSEBSetup extends AbstractDescribableImpl<AWSEBSetup> {
 
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception{
+    public boolean perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws Exception {
         return true;
     }
 
-    public static boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener, List<AWSEBSetup> extensions){
+    public static boolean perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, List<AWSEBSetup> extensions) {
         boolean status = true;
         try {
             for (AWSEBSetup eb : extensions) {
                 if (eb != null) {
-                    status &= eb.perform(build, launcher, listener);
+                    status &= eb.perform(build, workspace, launcher, listener);
                 }
             }
             return status;
@@ -27,5 +28,5 @@ public abstract class AWSEBSetup extends AbstractDescribableImpl<AWSEBSetup> {
             throw new RuntimeException(exc);
         }
     }
-    
+
 }

@@ -1,8 +1,9 @@
 package org.jenkinsci.plugins.awsbeanstalkpublisher.extensions.envlookup;
 
 import hudson.Extension;
+import hudson.model.Run;
 import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
+import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class ByName extends AWSEBSetup implements EnvLookup {
     }
 
     @Override
-    public List<EnvironmentDescription> getEnvironments(AbstractBuild<?, ?> build, BuildListener listener, AWSElasticBeanstalk awseb, String applicationName) {
+    public List<EnvironmentDescription> getEnvironments(Run<?, ?> build, TaskListener listener, AWSElasticBeanstalk awseb, String applicationName) {
         DescribeEnvironmentsRequest request = new DescribeEnvironmentsRequest();
         request.withApplicationName(applicationName);
         request.withIncludeDeleted(false);
